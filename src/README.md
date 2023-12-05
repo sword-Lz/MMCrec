@@ -1,55 +1,12 @@
-# Source Code
+This is our Pytorch implementation for the paper: "Multimodal Contrastive Learning for Sequential Recommendation".
 
-`main.py` serves as the entrance of our framework, and there are three main packages. 
+In the training phase, please run:
 
-### Structure
+'''python
+python3 main.py --emb_size 64 --model_name MMCrec --fusion_method attention --random_seed 0 --lmd 0.01 --gpu 1 --lr 1e-4 --l2 0 --history_max 50 --batch_size 256 --dataset 'beauty' --test_all 1
+'''
 
-- `helpers\`
-  - `BaseReader.py`: read dataset csv into DataFrame and append necessary information (e.g. interaction history)
-  - `BaseRunner.py`: control the training and evaluation process of a model
-  - `...`: customize helpers with specific functions
-- `models\`
-  - `BaseModel.py`: basic model classes and dataset classes, with some common functions of a model
-  - `...`: customize models inherited from classes in *BaseModel*
-- `utils\`
-  - `layers.py`: common modules for model definition (e.g. attention)
-  - `utils.py`: some utils functions
-- `main.py`: main entrance, connect all the modules
-- `exp.py`: repeat experiments in *run.sh* and save averaged results to csv 
-- `run.sh`: running commands for each model
-
-### Define a New Model
-
-Generally we can define a new class inheriting *GeneralModel* (a subclass of *BaseModel*), as well as the inner class *Dataset*. The following functions need to be implement at least:
-
-```python
-class NewModel(GeneralModel):
-    reader = 'BaseReader'  # assign a reader class, BaseReader by default
-    runner = 'BaseRunner'  # assign a runner class, BaseRunner by default
-
-    def __init__(self, args, corpus):
-        super().__init__(args, corpus)
-        self._define_params()
-        self.apply(self.init_weights)
-
-    def _define_params(self):
-        # define parameters in the model
-
-    def forward(self, feed_dict):
-        # generate prediction (ranking score according to tensors in feed_dict)
-        item_id = feed_dict['item_id']  # [batch_size, -1]
-        user_id = feed_dict['user_id']  # [batch_size]
-        prediction = (...)
-        out_dict = {'prediction': prediction.view(feed_dict['batch_size'], -1)}
-        return out_dict
-
-    class Dataset(GeneralModel.Dataset):
-        # construct feed_dict for a single instance (called by __getitem__)
-        # will be collated to a integrated feed dict for each batch
-        def _get_feed_dict(self, index):
-            feed_dict = super()._get_feed_dict(index)
-            (...)
-            return feed_dict
-```
-
-If the model definition is more complicated, you can inherit other functions in *BaseModel* (e.g. `loss`, `customize_parameters`) and *Dataset* (e.g. `_prepare`, `actions_before_epoch`), which needs deeper understandings about [BaseModel.py](https://github.com/THUwangcy/ReChorus/tree/master/src/models/BaseModel.py) and [BaseRunner.py](https://github.com/THUwangcy/ReChorus/tree/master/src/helpers/BaseRunner.py). You can also implement a new runner class to accommodate different experimental settings.
+for the testing phase, please run:
+'''python
+python3 main.py --emb_size 64 --model_name MMCrec --fusion_method attention --load 1 --random_seed 0 --lmd 0.01 --gpu 1 --lr 1e-4 --l2 0 --history_max 50 --batch_size 256 --dataset 'beauty' --test_all 1
+'''
