@@ -493,17 +493,25 @@ class AFF(nn.Module):
         super(AFF, self).__init__()
 
         self.local_att = nn.Linear(emb_size, emb_size)
+        self.local_att = nn.Sequential(
+            nn.Linear(emb_size, emb_size),
+        )
 
-        self.global_att = nn.Linear(emb_size, emb_size)
+        self.global_att = nn.Sequential(
+            nn.AdaptiveAvgPool1d(1),
+            nn.Linear(1, 1),
+        )
+
 
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x, residual):
         xa = x + residual
         xl = self.local_att(xa)
-        xg = self.global_att(xa)
+        xg = self.global_att(xa.unsqueeze(1)).view(xa.size(0), -1)
         xlg = xl + xg
         wei = self.sigmoid(xlg)
 
         xo = 2 * x * wei + 2 * residual * (1 - wei)
         return xo
+
